@@ -2,7 +2,7 @@
 
 Daily job: pulls drone news RSS, picks one unseen article, summarizes it with
 a local Ollama model, appends a row (Date, Title, Summary, Link) to
-`drone_news_log.xlsx`, and commits the update back to the repo.
+`drone_news_log.csv`, and commits the update back to the repo.
 Runs automatically via GitHub Actions — no server of your own needed.
 
 ## 1. Create the repo and push these files
@@ -28,7 +28,7 @@ git push -u origin main
 
 Settings → Actions → General → Workflow permissions → set to
 **"Read and write permissions"**. This lets the workflow commit the updated
-`drone_news_log.xlsx` back to the repo using the built-in `GITHUB_TOKEN`
+`drone_news_log.csv` back to the repo using the built-in `GITHUB_TOKEN`
 (no personal access token or secret needed).
 
 ## 3. (Optional) add NewsAPI as a second source
@@ -57,7 +57,7 @@ between runs).
 - `newsletter.py` — the pipeline (fetch → select → summarize → append)
 - `.github/workflows/daily-drone-news.yml` — schedule + Ollama setup + commit-back
 - `requirements.txt` — Python deps
-- `drone_news_log.xlsx` — output, created on first run
+- `drone_news_log.csv` — output, created on first run
 - `sent_history.json` — dedupe log, created on first run
 
 ## Notes
@@ -65,4 +65,4 @@ between runs).
   an LLM ranking step if you want topic-relevance filtering instead.
 - If a run finds no new articles, it skips the commit (no empty commits).
 - GitHub-hosted runners are ephemeral; nothing persists except what's
-  committed back to the repo (the xlsx and history file).
+  committed back to the repo (the csv and history file).

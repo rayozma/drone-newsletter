@@ -1,13 +1,11 @@
-import feedparser, json, os, requests, datetime
-from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Font
+import feedparser, json, os, requests, datetime, csv
 
 FEEDS = ["https://dronedj.com/feed", "https://dronelife.com/feed", "https://dronexl.co/feed", "https://www.suasnews.com/feed"]
 NEWSAPI_QUERY = "drone"
 NEWSAPI_KEY = os.environ.get("NEWSAPI_KEY")
 DIR = os.path.dirname(__file__)
 HISTORY_FILE = os.path.join(DIR, "sent_history.json")
-SHEET_FILE = os.path.join(DIR, "drone_news_log.xlsx")
+SHEET_FILE = os.path.join(DIR, "drone_news_log.csv")
 OLLAMA_API = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.1")
 
@@ -49,27 +47,12 @@ def summarize(item):
     return r.json()["response"].strip()
 
 def append_row(date, title, summary, link):
-    if os.path.exists(SHEET_FILE):
-        wb = load_workbook(SHEET_FILE)
-        ws = wb.active
-    else:
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Drone News"
-        headers = ["Date", "Title", "Summary", "Link"]
-        for col, h in enumerate(headers, start=1):
-            c = ws.cell(row=1, column=col, value=h)
-            c.font = Font(name="Arial", bold=True)
-        ws.column_dimensions["A"].width = 12
-        ws.column_dimensions["B"].width = 40
-        ws.column_dimensions["C"].width = 70
-        ws.column_dimensions["D"].width = 50
-    row = ws.max_row + 1
-    values = [date, title, summary, link]
-    for col, v in enumerate(values, start=1):
-        c = ws.cell(row=row, column=col, value=v)
-        c.font = Font(name="Arial")
-    wb.save(SHEET_FILE)
+    is_new = not os.path.exists(SHEET_FILE)
+    with open(SHEET_FILE, "a", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        if is_new:
+            w.writerow(["Date", "Title", "Summary", "Link"])
+        w.writerow([date, title, summary, link])
 
 def main():
     history = load_history()
