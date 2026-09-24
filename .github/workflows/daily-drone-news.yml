@@ -51,7 +51,7 @@ jobs:
         run: |
           git config user.name "drone-news-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add drone_news_log.csv sent_history.json
+          git add drone_news_log.csv sent_history.json index.html
           git diff --cached --quiet || git commit -m "Daily drone news update"
           git pull --rebase origin main
           git push
