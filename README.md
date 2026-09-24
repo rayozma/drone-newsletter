@@ -3,7 +3,7 @@
 Daily job: pulls drone news RSS, picks one unseen article, summarizes it with
 a local Ollama model, appends a row (Date, Title, Summary, Link) to
 `drone_news_log.csv`, and commits the update back to the repo.
-Runs automatically via GitHub Actions — no server of your own needed.
+Runs automatically via GitHub Actions. No server of your own needed.
 
 ## 1. Create the repo and push these files
 
