@@ -79,7 +79,7 @@ tr:last-child td{{border-bottom:0}} td.d{{white-space:nowrap;color:var(--muted)}
 td a{{color:var(--link);font-weight:600;text-decoration:none}} td a:hover{{text-decoration:underline}}
 th:nth-child(2){{width:30%}}
 .banner{{position:relative;overflow:hidden}}
-.banner img{{display:block;width:100%;height:280px;object-fit:cover;object-position:center 30%}}
+.banner img{{display:block;width:100%;height:280px;object-fit:cover;object-position:center 40%}}
 .banner::before{{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.45),transparent 55%)}}
 .banner-text{{position:absolute;top:0;left:0;right:0;z-index:1;max-width:1100px;margin:0 auto;padding:28px 20px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.6)}}
 .banner-text h1{{margin:0;font-size:40px}}
