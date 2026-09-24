@@ -2,7 +2,7 @@ name: Daily Drone News
 
 on:
   schedule:
-    - cron: "13 1 * * *"   # 01:13 UTC ≈ 08:13 WIB — off the hour to avoid GitHub's peak-load scheduling drops
+    - cron: "13 1 * * *"   # 01:13 UTC ≈ 08:13 WIB
   workflow_dispatch: {}
 
 permissions:
@@ -14,8 +14,13 @@ jobs:
     concurrency:
       group: daily-drone-news
       cancel-in-progress: false
+    env:
+      OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL || 'llama3.2:3b' }}
+      NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
@@ -24,34 +29,28 @@ jobs:
       - name: Install Python deps
         run: pip install -r requirements.txt
 
-      - name: Cache Ollama models
-        uses: actions/cache@v4
-        with:
-          path: ~/.ollama
-          key: ollama-${{ env.OLLAMA_MODEL }}
-
       - name: Install Ollama
         run: curl -fsSL https://ollama.com/install.sh | sh
 
       - name: Start Ollama and pull model
-        env:
-          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL || 'llama3.2:3b' }}
         run: |
           ollama serve &
           sleep 5
           ollama pull "$OLLAMA_MODEL"
 
-      - name: Run newsletter
-        env:
-          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL || 'llama3.2:3b' }}
-          NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
-        run: python newsletter.py
-
-      - name: Commit updated log
+      - name: Run newsletter and commit
         run: |
           git config user.name "drone-news-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add drone_news_log.csv sent_history.json index.html
-          git diff --cached --quiet || git commit -m "Daily drone news update"
-          git pull --rebase origin main
-          git push
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            python newsletter.py
+            git add drone_news_log.csv sent_history.json index.html
+            git diff --cached --quiet && exit 0
+            git commit -m "Daily drone news update"
+            git push origin HEAD:main && exit 0
+            echo "Push rejected (repo changed during run), retrying from latest..."
+            sleep 5
+          done
+          exit 1
