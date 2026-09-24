@@ -2,7 +2,7 @@ name: Daily Drone News
 
 on:
   schedule:
-    - cron: "0 1 * * *"   # 01:00 UTC = 08:00 WIB
+    - cron: "13 1 * * *"   # 01:13 UTC ≈ 08:13 WIB — off the hour to avoid GitHub's peak-load scheduling drops
   workflow_dispatch: {}
 
 permissions:
