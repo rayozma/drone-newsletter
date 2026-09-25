@@ -1,8 +1,6 @@
 name: Daily Drone News
 
 on:
-  schedule:
-    - cron: "13 1 * * *"   # 01:13 UTC ≈ 08:13 WIB
   workflow_dispatch: {}
 
 permissions:
