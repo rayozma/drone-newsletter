@@ -1,4 +1,5 @@
 import feedparser, json, os, requests, datetime, csv, re, html
+from urllib.parse import urlparse
 
 FEEDS = ["https://dronedj.com/feed", "https://dronelife.com/feed", "https://dronexl.co/feed", "https://www.suasnews.com/feed"]
 NEWSAPI_QUERY = "drone"
@@ -58,9 +59,15 @@ def save_rows(rows):
         w.writeheader()
         w.writerows(rows)
 
+SOURCE_NAMES = {"dronedj.com": "DroneDJ", "dronelife.com": "DroneLife", "dronexl.co": "DroneXL", "suasnews.com": "sUAS News"}
+
+def source_name(link):
+    domain = urlparse(link).netloc.removeprefix("www.")
+    return SOURCE_NAMES.get(domain, domain)
+
 def render_html(rows):
     e = html.escape
-    body = "\n".join(f'<tr><td class="d">{e(r["Date"])}</td><td><a href="{e(r["Link"])}" target="_blank" rel="noopener">{e(r["Title"])}</a></td><td>{e(r["Summary"])}</td></tr>' for r in reversed(rows))
+    body = "\n".join(f'<tr><td class="d">{e(r["Date"])}</td><td><a href="{e(r["Link"])}" target="_blank" rel="noopener">{e(r["Title"])}</a></td><td class="d">{e(source_name(r["Link"]))}</td><td>{e(r["Summary"])}</td></tr>' for r in reversed(rows))
     updated = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -91,7 +98,7 @@ th:nth-child(2){{width:30%}}
 <div class="banner-text"><h1>Daily Drone News</h1><p>One summarized drone article per day &middot; updated {updated}</p></div>
 </header>
 <main>
-<div class="wrap"><table><thead><tr><th>Date</th><th>Article</th><th>Summary</th></tr></thead><tbody>
+<div class="wrap"><table><thead><tr><th>Date</th><th>Article</th><th>Source</th><th>Summary</th></tr></thead><tbody>
 {body}
 </tbody></table></div></main></body></html>"""
     open(HTML_FILE, "w", encoding="utf-8").write(page)
