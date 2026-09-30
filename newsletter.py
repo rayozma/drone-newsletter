@@ -27,14 +27,14 @@ def fetch_rss(history):
     for url in FEEDS:
         for e in feedparser.parse(url).entries:
             if e.link not in history:
-                items.append({"title": e.title, "link": e.link, "summary": strip_tags(e.get("summary", e.title))})
+                items.append({"title": e.title, "link": e.link, "summary": strip_tags(e.get("summary", e.title)), "source": url})
     return items
 
 def fetch_newsapi(history):
     if not NEWSAPI_KEY: return []
     r = requests.get("https://newsapi.org/v2/everything", params={"q": NEWSAPI_QUERY, "sortBy": "publishedAt", "language": "en", "pageSize": 20}, headers={"X-Api-Key": NEWSAPI_KEY})
     r.raise_for_status()
-    return [{"title": a["title"], "link": a["url"], "summary": strip_tags(a.get("description") or a.get("content") or a["title"])} for a in r.json().get("articles", []) if a["url"] not in history]
+    return [{"title": a["title"], "link": a["url"], "summary": strip_tags(a.get("description") or a.get("content") or a["title"]), "source": "newsapi"} for a in r.json().get("articles", []) if a["url"] not in history]
 
 def clean_summary(s):
     return PREAMBLE.sub("", s.strip()).strip().strip('"').strip()
@@ -96,13 +96,18 @@ th:nth-child(2){{width:30%}}
 </tbody></table></div></main></body></html>"""
     open(HTML_FILE, "w", encoding="utf-8").write(page)
 
+def pick_article(candidates):
+    sources = sorted({c["source"] for c in candidates})
+    today_source = sources[datetime.date.today().toordinal() % len(sources)]
+    return next(c for c in candidates if c["source"] == today_source)
+
 def main():
     rows = load_rows()
     for r in rows: r["Summary"] = clean_summary(r["Summary"])
     history = load_history()
     candidates = fetch_rss(history) + fetch_newsapi(history)
     if candidates:
-        pick = candidates[0]
+        pick = pick_article(candidates)
         rows.append({"Date": datetime.date.today().isoformat(), "Title": pick["title"], "Summary": summarize(pick), "Link": pick["link"]})
         history.add(pick["link"])
         save_history(history)
