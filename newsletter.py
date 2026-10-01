@@ -67,10 +67,11 @@ def source_name(link):
 
 def render_html(rows):
     e = html.escape
-    body = "\n".join(f'<tr><td class="d">{e(r["Date"])}</td><td><a href="{e(r["Link"])}" target="_blank" rel="noopener">{e(r["Title"])}</a></td><td class="d">{e(source_name(r["Link"]))}</td><td>{e(r["Summary"])}</td></tr>' for r in reversed(rows))
+    body = "\n".join(f'<tr><td class="d date">{e(r["Date"])}</td><td class="title"><a href="{e(r["Link"])}" target="_blank" rel="noopener">{e(r["Title"])}</a></td><td class="d src">{e(source_name(r["Link"]))}</td><td class="sum">{e(r["Summary"])}</td></tr>' for r in reversed(rows))
     updated = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1a1a1a">
 <title>Daily Drone News</title>
 <style>
 :root{{--bg:#fff;--fg:#1a1a1a;--muted:#666;--line:#e5e5e5;--head:#f6f6f6;--link:#0b5fff}}
@@ -87,11 +88,36 @@ td a{{color:var(--link);font-weight:600;text-decoration:none}} td a:hover{{text-
 th:nth-child(2){{width:30%}}
 .banner{{position:relative;overflow:hidden}}
 .banner img{{display:block;width:100%;height:280px;object-fit:cover;object-position:center 40%}}
-.banner::before{{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.45),transparent 55%)}}
+.banner::before{{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,.25) 50%,transparent 75%)}}
 .banner-text{{position:absolute;top:0;left:0;right:0;z-index:1;max-width:1100px;margin:0 auto;padding:28px 20px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.6)}}
 .banner-text h1{{margin:0;font-size:40px}}
-.banner-text p{{margin:4px 0 0}}
-@media (max-width:600px){{.banner img{{height:160px}} .banner-text h1{{font-size:28px}}}}
+.banner-text p{{margin:4px 0 0;font-weight:500;text-shadow:0 1px 3px rgba(0,0,0,.9)}}
+@media (max-width:900px){{
+main{{padding:24px 16px}}
+th,td{{padding:10px 12px}}
+th:nth-child(2){{width:34%}}
+.banner img{{height:220px}}
+.banner-text{{padding:22px 16px}}
+.banner-text h1{{font-size:34px}}
+}}
+@media (max-width:640px){{
+main{{padding:16px 12px 24px}}
+.banner img{{height:150px}}
+.banner-text{{padding:16px}}
+.banner-text h1{{font-size:26px}}
+.banner-text p{{font-size:13px}}
+.wrap{{border:0;border-radius:0;overflow:visible}}
+thead{{display:none}}
+table,tbody{{display:block}}
+tr{{display:grid;grid-template-columns:auto 1fr;column-gap:6px;padding:14px 16px;margin-bottom:12px;border:1px solid var(--line);border-radius:10px}}
+tr:last-child{{margin-bottom:0}}
+td{{padding:0;border:0}}
+td.date{{grid-column:1;grid-row:1;font-size:13px}}
+td.src{{grid-column:2;grid-row:1;font-size:13px}}
+td.src::before{{content:"\\00b7\\00a0"}}
+td.title{{grid-column:1/-1;grid-row:2;margin:4px 0 6px;font-size:16px;line-height:1.35}}
+td.sum{{grid-column:1/-1;grid-row:3}}
+}}
 </style></head><body>
 <header class="banner">
 <img src="images/banner.webp" alt="Illustrated city skyline with drones flying over a river">

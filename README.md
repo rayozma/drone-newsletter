@@ -12,15 +12,18 @@ own needs to be on, and there are no API costs.
 
 1. **Collect** — reads RSS feeds from DroneDJ, DroneLife, DroneXL and sUAS News,
    plus a NewsAPI.org search for "drone" (if a key is set).
-2. **Pick** — takes the first article that hasn't been used before
+2. **Pick** — rotates between sources by date, taking a new article from a
+   different site each day when possible. Articles already used are skipped
    (`sent_history.json` keeps track).
 3. **Summarize** — a small Ollama model (`llama3.2:3b` by default) writes a
    2–3 sentence summary.
 4. **Save** — adds a row to `drone_news_log.csv` and rebuilds `index.html`.
 5. **Publish** — commits both files; GitHub Pages serves `index.html` as the site.
 
-Runs daily at **01:13 UTC (≈ 08:13 WIB)**. GitHub sometimes starts scheduled
-runs 10–30 minutes late, which is normal.
+Runs daily, started by an external cron job that triggers the workflow
+(`workflow_dispatch`). The workflow file intentionally has no `schedule:` entry —
+don't add one, or it will run twice a day. You can also start it by hand via
+**Actions → Daily Drone News → Run workflow**.
 
 ## Files
 
@@ -50,7 +53,7 @@ Useful places to tweak:
 
 - **Banner height** — `height:` in the `.banner img` line (desktop), and in the
   `@media` line (phones).
-- **Which part of the banner shows** — `object-position:center 30%`
+- **Which part of the banner shows** — `object-position:center 40%`
   (`0%` = top of the image, `100%` = bottom).
 - **Colors** — the `:root` line (light mode) and the `prefers-color-scheme:dark` line (dark mode).
 
